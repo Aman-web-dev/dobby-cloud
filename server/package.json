@@ -1,0 +1,19 @@
+{
+  "name": "boddy-server",
+  "version": "1.0.0",
+  "description": "This is the backend for the Dobby files a Google Drive clone ",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "test": "npm test server.js",
+    "start": "nodemon server.js"
+  },
+  "author": "Aman Kumar",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongodb": "6.17",
+    "mongoose": "^8.16.4",
+    "nodemon": "^3.1.10"
+  }
+}

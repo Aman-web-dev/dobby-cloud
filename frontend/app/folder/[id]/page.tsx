@@ -113,9 +113,8 @@ export default function HomeScreen({ params }: { params: any }) {
         }
       );
 
-      // Refresh folder data after creation
       await getFolderContents(getCurrentFolderId(), currentUser.token);
-
+      router.refresh()
       setNewFolderName("");
       setShowCreateFolder(false);
     } catch (error) {
@@ -515,7 +514,7 @@ export default function HomeScreen({ params }: { params: any }) {
               value={newFolderName}
               onChange={(e) => setNewFolderName(e.target.value)}
               placeholder="Folder name"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-6"
+              className="w-full px-4 py-3 border text-black border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none mb-6"
               autoFocus
               disabled={loading}
             />

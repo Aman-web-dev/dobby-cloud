@@ -190,7 +190,7 @@ export default function HomeScreen({ params }: { params: any }) {
     }
   };
 
-  // Get user details from cookie
+
   const getUserDetails = async () => {
     const userDetails = await getUserDetailsFromCookie();
     if (userDetails) {
@@ -201,12 +201,12 @@ export default function HomeScreen({ params }: { params: any }) {
         token: token as string,
       });
 
-      // Load initial data
+
       await getFolderContents(getCurrentFolderId(), token as string);
       await buildBreadcrumbs(getCurrentFolderId(), token as string);
     } else {
-      // Redirect to login if no user details
-      router.push("/auth/login");
+
+      router.push("/auth/");
     }
   };
 

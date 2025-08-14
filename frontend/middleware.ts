@@ -4,7 +4,7 @@ import { NextRequest } from 'next/server'
 import {app} from './app/lib/firebase';
 
 // List of paths that don't require authentication
-const publicPaths = ['/auth']
+const publicPaths = ['/auth','/']
 
 export default function middleware(request:any) {
   const { pathname } = request.nextUrl

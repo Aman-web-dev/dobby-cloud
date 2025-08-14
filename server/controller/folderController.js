@@ -58,7 +58,7 @@ export const getUserFolders = async (req, res) => {
   try {
     const userId = req.user._id;
     const { folder_id } = req.params;
-    const folders = await Folder.find({ user: userId,parentFolder:folder_id=="userId"?null:folder_id});
+    const folders = await Folder.find({ user: userId,parentFolder:folder_id==userId?null:folder_id});
 
     res.status(200).json({
       status: 'success',

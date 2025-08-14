@@ -65,7 +65,7 @@ type BreadcrumbItem = {
   name: string;
 };
 
-export default function HomeScreen({ params }: { params: { id: string } }) {
+export default function HomeScreen({ params }: { params: any}) {
   const [currentUser, setCurrentUser] = useState<User>({
     email: "",
     userId: "",

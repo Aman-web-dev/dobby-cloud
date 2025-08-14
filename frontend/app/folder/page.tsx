@@ -7,8 +7,8 @@ export default function Page() {
   const router = useRouter();
 
   useEffect(() => {
-    router.replace('/folder/main'); // redirect without adding to history
+    router.replace('/folder/root'); 
   }, [router]);
 
-  return null; // nothing to render
+  return null;
 }

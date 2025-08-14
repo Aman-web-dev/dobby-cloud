@@ -11,7 +11,7 @@ export default function middleware(request:any) {
 
   // If the user is logged in and tries to access auth pages, redirect to home
   if (sessionToken && publicPaths.some(path => pathname.startsWith(path))) {
-    return NextResponse.redirect(new URL('/', request.url))
+    return NextResponse.redirect(new URL('/folder', request.url))
   }
 
   // If the user is not logged in and tries to access protected pages, redirect to auth

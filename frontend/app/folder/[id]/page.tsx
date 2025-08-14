@@ -7,7 +7,6 @@ import axios from "axios";
 import { useRouter, usePathname } from "next/navigation";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 
-
 const FolderIcon = ({ className = "w-12 h-12" }) => (
   <div className={`${className} relative`}>
     <svg viewBox="0 0 64 64" className="w-full h-full">
@@ -66,7 +65,7 @@ type BreadcrumbItem = {
   name: string;
 };
 
-export default function HomeScreen({ params }:{params:{id:string}}) {
+export default function HomeScreen({ params }: { params: { id: string } }) {
   const [currentUser, setCurrentUser] = useState<User>({
     email: "",
     userId: "",
@@ -83,7 +82,7 @@ export default function HomeScreen({ params }:{params:{id:string}}) {
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<Image[]>([]);
-
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
   const pathName = usePathname();
 
@@ -99,7 +98,7 @@ export default function HomeScreen({ params }:{params:{id:string}}) {
     setLoading(true);
     try {
       const response = await axios.post(
-        "http://localhost:9000/api/v1/folders/",
+        `${backendUrl}/folders/`,
         {
           name: newFolderName,
           parentFolder: getCurrentFolderId(),
@@ -124,40 +123,38 @@ export default function HomeScreen({ params }:{params:{id:string}}) {
     }
   };
 
+  async function uploadImageAndGetUrl(
+    imageFile: any,
+    storagePath: any,
+    userId = null
+  ) {
+    try {
+      // Initialize Firebase Storage
+      const storage = getStorage();
 
+      // Create a reference to the storage location
+      let fullPath = storagePath;
+      if (userId) {
+        fullPath = `${userId}/${storagePath}`;
+      }
 
-async function uploadImageAndGetUrl(imageFile, storagePath, userId = null) {
+      // Add timestamp to filename to make it unique
+      const timestamp = Date.now();
+      const fileName = `${timestamp}_${imageFile.name}`;
+      const storageRef = ref(storage, `${fullPath}/${fileName}`);
 
+      // Upload the file
+      const snapshot = await uploadBytes(storageRef, imageFile);
 
-  try {
-    // Initialize Firebase Storage
-    const storage = getStorage();
-    
-    // Create a reference to the storage location
-    let fullPath = storagePath;
-    if (userId) {
-      fullPath = `${userId}/${storagePath}`;
+      // Get the download URL
+      const downloadUrl = await getDownloadURL(snapshot.ref);
+
+      return downloadUrl;
+    } catch (error) {
+      console.error("Error uploading image:", error);
+      throw error; // Re-throw the error for the caller to handle
     }
-    
-    // Add timestamp to filename to make it unique
-    const timestamp = Date.now();
-    const fileName = `${timestamp}_${imageFile.name}`;
-    const storageRef = ref(storage, `${fullPath}/${fileName}`);
-    
-    // Upload the file
-    const snapshot = await uploadBytes(storageRef, imageFile);
-    
-    // Get the download URL
-    const downloadUrl = await getDownloadURL(snapshot.ref);
-    
-    return downloadUrl;
-  } catch (error) {
-    console.error("Error uploading image:", error);
-    throw error; // Re-throw the error for the caller to handle
   }
-}
-
-
 
   // Upload image function
   const uploadImage = async () => {
@@ -170,16 +167,12 @@ async function uploadImageAndGetUrl(imageFile, storagePath, userId = null) {
       formData.append("name", newImageName);
       formData.append("folder", getCurrentFolderId() || "");
 
-      const response = await axios.post(
-        "http://localhost:9000/api/v1/images/",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${currentUser.token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${backendUrl}/images/`, formData, {
+        headers: {
+          Authorization: `Bearer ${currentUser.token}`,
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       // Refresh folder data after upload
       await getFolderContents(getCurrentFolderId(), currentUser.token);
@@ -215,15 +208,13 @@ async function uploadImageAndGetUrl(imageFile, storagePath, userId = null) {
     }
   };
 
-
   const getFolderContents = async (folderId: string | null, token: string) => {
     setLoading(true);
     try {
       const folderIdParam = folderId || "689c241a9bad5e3b65a72e6a";
 
-
       const foldersResponse = await axios.get(
-        `http://localhost:9000/api/v1/folders/${folderIdParam}`,
+        `${backendUrl}/folders/${folderIdParam}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -233,7 +224,7 @@ async function uploadImageAndGetUrl(imageFile, storagePath, userId = null) {
 
       // Fetch images
       const imagesResponse = await axios.get(
-        `http://localhost:9000/api/v1/images/${folderIdParam}`,
+        `${backendUrl}/images/${folderIdParam}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -260,9 +251,8 @@ async function uploadImageAndGetUrl(imageFile, storagePath, userId = null) {
     }
 
     try {
-
       const response = await axios.get(
-        `http://localhost:9000/api/v1/folders/${folderId}`,
+        `${backendUrl}/api/v1/folders/${folderId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -273,7 +263,9 @@ async function uploadImageAndGetUrl(imageFile, storagePath, userId = null) {
       // Parse the path from the folder data
       const folderData = response.data.data.folder;
       if (folderData && folderData.path) {
-        const pathParts = folderData.path.split("/").filter((part:any) => part);
+        const pathParts = folderData.path
+          .split("/")
+          .filter((part: any) => part);
         setCurrentPath([{ id: folderId, name: folderData.name }]);
       }
     } catch (error) {
@@ -319,9 +311,7 @@ async function uploadImageAndGetUrl(imageFile, storagePath, userId = null) {
 
     try {
       const response = await axios.get(
-        `http://localhost:9000/api/v1/images/search?q=${encodeURIComponent(
-          term
-        )}`,
+        `${backendUrl}/images/search?q=${encodeURIComponent(term)}`,
         {
           headers: {
             Authorization: `Bearer ${currentUser.token}`,

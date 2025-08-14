@@ -9,8 +9,10 @@ export const handleSignup = async (
   password: string,
   name: string
 ) => {
+
+  const backendUrl= process.env.NEXT_PUBLIC_BACKEND_URL
   const signupResp = await axios
-    .post("http://localhost:9000/api/v1/auth/signup", {
+    .post(`${backendUrl}/auth/signup`, {
       name,
       email,
       password,
@@ -30,8 +32,9 @@ export const handleLogin = async (
   password: string,
   router: any
 ) => {
+   const backendUrl= process.env.NEXT_PUBLIC_BACKEND_URL
   const userLogin = axios
-    .post("http://localhost:9000/api/v1/auth/login", {
+    .post(`${backendUrl}/auth/login`, {
       email,
       password,
     })

@@ -1,6 +1,7 @@
 // middleware.js
 import { NextResponse } from 'next/server'
 import { NextRequest } from 'next/server'
+import {app} from './app/lib/firebase';
 
 // List of paths that don't require authentication
 const publicPaths = ['/auth']

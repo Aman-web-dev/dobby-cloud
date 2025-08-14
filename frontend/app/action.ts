@@ -18,11 +18,11 @@ export const handleSignup = async (
       password,
     })
     .then(function (response) {
-      alert("Signup Successfull proceed to login");
+    console.log("Signup Successfull proceed to login");
       console.log(response);
     })
     .catch(function (error) {
-      alert("Signup UnSuccessfull Try Again");
+      console.log("Signup UnSuccessfull Try Again");
       console.log(error);
     });
 };
@@ -47,7 +47,7 @@ export const handleLogin = async (
       return;
     })
     .catch((err) => {
-      alert(err);
+      console.log(err);
       return false;
     });
 };

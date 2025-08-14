@@ -4,8 +4,11 @@ import { Upload, FolderPlus, ArrowLeft, Home, Search } from "lucide-react";
 import { getUserDetailsFromCookie } from "../../lib/session";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { storage } from "../../lib/firebase";
 import { useRouter, usePathname } from "next/navigation";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { LogOut } from "lucide-react";
+import { handleLogOut } from "../../action";
 
 const FolderIcon = ({ className = "w-12 h-12" }) => (
   <div className={`${className} relative`}>
@@ -65,7 +68,7 @@ type BreadcrumbItem = {
   name: string;
 };
 
-export default function HomeScreen({ params }: { params: any}) {
+export default function HomeScreen({ params }: { params: any }) {
   const [currentUser, setCurrentUser] = useState<User>({
     email: "",
     userId: "",
@@ -88,7 +91,7 @@ export default function HomeScreen({ params }: { params: any}) {
 
   // Get current folder ID from params or null for root
   const getCurrentFolderId = () => {
-    return params.id === "root" ? null : params.id;
+    return params.id === "root" ? currentUser.userId : params.id;
   };
 
   // Create folder function
@@ -117,7 +120,7 @@ export default function HomeScreen({ params }: { params: any}) {
       setShowCreateFolder(false);
     } catch (error) {
       console.error("Error creating folder:", error);
-      alert("Failed to create folder. Please try again.");
+      console.log("Failed to create folder. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -126,55 +129,55 @@ export default function HomeScreen({ params }: { params: any}) {
   async function uploadImageAndGetUrl(
     imageFile: any,
     storagePath: any,
-    userId = null
+    userId: string
   ) {
     try {
-      // Initialize Firebase Storage
-      const storage = getStorage();
+      console.log(storage);
+      console.log("I am Called");
 
-      // Create a reference to the storage location
       let fullPath = storagePath;
       if (userId) {
         fullPath = `${userId}/${storagePath}`;
       }
 
-      // Add timestamp to filename to make it unique
       const timestamp = Date.now();
       const fileName = `${timestamp}_${imageFile.name}`;
       const storageRef = ref(storage, `${fullPath}/${fileName}`);
 
-      // Upload the file
       const snapshot = await uploadBytes(storageRef, imageFile);
 
-      // Get the download URL
       const downloadUrl = await getDownloadURL(snapshot.ref);
 
       return downloadUrl;
     } catch (error) {
       console.error("Error uploading image:", error);
-      throw error; // Re-throw the error for the caller to handle
+      throw error;
     }
   }
 
-  // Upload image function
   const uploadImage = async () => {
     if (!newImageName.trim() || !selectedImage || !currentUser.token) return;
 
     setLoading(true);
     try {
-      const formData = new FormData();
-      formData.append("image", selectedImage);
-      formData.append("name", newImageName);
-      formData.append("folder", getCurrentFolderId() || "");
+      const imageUrl = await uploadImageAndGetUrl(
+        selectedImage,
+        "dobbyImages",
+        currentUser.userId
+      );
 
-      const response = await axios.post(`${backendUrl}/images/`, formData, {
+      const data = {
+        name: newImageName,
+        imageUrl: imageUrl,
+        folderId: getCurrentFolderId(),
+      };
+
+      const response = await axios.post(`${backendUrl}/images/`, data, {
         headers: {
           Authorization: `Bearer ${currentUser.token}`,
-          "Content-Type": "multipart/form-data",
         },
       });
 
-      // Refresh folder data after upload
       await getFolderContents(getCurrentFolderId(), currentUser.token);
 
       setNewImageName("");
@@ -182,7 +185,7 @@ export default function HomeScreen({ params }: { params: any}) {
       setShowUploadImage(false);
     } catch (error) {
       console.error("Error uploading image:", error);
-      alert("Failed to upload image. Please try again.");
+      console.log("Failed to upload image. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -243,7 +246,6 @@ export default function HomeScreen({ params }: { params: any}) {
     }
   };
 
-  // Build breadcrumb navigation
   const buildBreadcrumbs = async (folderId: string | null, token: string) => {
     if (!folderId) {
       setCurrentPath([]);
@@ -260,7 +262,6 @@ export default function HomeScreen({ params }: { params: any}) {
         }
       );
 
-      // Parse the path from the folder data
       const folderData = response.data.data.folder;
       if (folderData && folderData.path) {
         const pathParts = folderData.path
@@ -274,12 +275,10 @@ export default function HomeScreen({ params }: { params: any}) {
     }
   };
 
-  // Navigate to a specific folder
   const navigateToFolder = (folder: Folder) => {
     router.push(`/folder/${folder._id}`);
   };
 
-  // Navigate up one level
   const navigateUp = () => {
     if (currentPath.length === 0) {
       router.push("/folder/root");
@@ -295,12 +294,10 @@ export default function HomeScreen({ params }: { params: any}) {
     router.push(`/folder/${parentFolder.id}`);
   };
 
-  // Navigate to home (root)
   const navigateHome = () => {
     router.push("/folder/root");
   };
 
-  // Search images
   const handleSearch = async (term: string) => {
     setSearchTerm(term);
 
@@ -373,9 +370,12 @@ export default function HomeScreen({ params }: { params: any}) {
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 text-gray-700">
                 <span className="text-sm text-gray-700">
                   Welcome, {currentUser.email}
+                </span>
+                <span onClick={() => handleLogOut(router)}>
+                  <LogOut />
                 </span>
               </div>
             </div>

@@ -7,15 +7,9 @@ export const uploadImage = async (req, res) => {
     const { name, folderId ,imageUrl } = req.body;
     const userId = req.user._id;
 
-    if (!req.file) {
-      return res.status(400).json({
-        status: 'fail',
-        message: 'Please upload an image'
-      });
-    }
 
     let folder = null;
-    if (folderId) {
+    if (folderId && folderId!=userId) {
       folder = await Folder.findOne({ _id: folderId, user: userId });
       if (!folder) {
         return res.status(404).json({
@@ -28,7 +22,7 @@ export const uploadImage = async (req, res) => {
     const newImage = await Image.create({
       name,
       user: userId,
-      folder: folderId || null,
+      folder: folderId===userId?null:folderId,
       imageUrl
     });
 
@@ -50,7 +44,7 @@ export const getUserImages = async (req, res) => {
   try {
     const userId = req.user._id;
     const { folder_id }=req.params;
-    const images = await Image.find({ user: userId,folder:folder_id });
+    const images = await Image.find({ user: userId,folder:folder_id==userId?null:folder_id});
 
     res.status(200).json({
       status: 'success',

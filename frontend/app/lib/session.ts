@@ -48,15 +48,15 @@ export async function getUserDetailsFromCookie() {
       return null; 
     }
 
-    // Expecting JWT payload: { id, email, exp }
-    const { id, email, exp,token } = payload;
+    const { userId, email, exp,token } = payload;
 
-    // Optional: check expiration manually (in case jwtVerify doesn't reject)
     if (exp && Date.now() >= exp * 1000) {
       return null; // token expired
     }
 
-    return { id, email, expiresIn: exp,token };
+    console.log("User Details",userId, email, exp,token)
+
+    return { userId, email, expiresIn: exp,token };
   } catch (error) {
     console.error('Error reading session cookie:', error);
     return null;

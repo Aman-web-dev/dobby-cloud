@@ -43,7 +43,7 @@ export const handleLogin = async (
       const { token } = resp.data;
       createSession(id, email, token);
       console.log(id, email, token)
-      router.push("/");
+      router.push("/folder/root");
       return;
     })
     .catch((err) => {

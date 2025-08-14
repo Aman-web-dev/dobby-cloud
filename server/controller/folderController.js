@@ -8,7 +8,7 @@ export const createFolder = async (req, res) => {
     let path = name;
     let parentFolder = null;
 
-    if (parentFolderId) {
+    if (parentFolderId && parentFolderId!=userId) {
       parentFolder = await Folder.findOne({ _id: parentFolderId, user: userId });
       if (!parentFolder) {
         return res.status(404).json({
@@ -23,7 +23,7 @@ export const createFolder = async (req, res) => {
     const existingFolder = await Folder.findOne({ 
       name, 
       user: userId, 
-      parentFolder: parentFolderId || null 
+      parentFolder: parentFolderId==userId?null:parentFolderId, 
     });
 
     if (existingFolder) {

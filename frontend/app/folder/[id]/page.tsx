@@ -87,14 +87,16 @@ export default function HomeScreen({ params }: { params: any }) {
   const [searchResults, setSearchResults] = useState<Image[]>([]);
   const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
   const router = useRouter();
-  const pathName = usePathname();
 
-  // Get current folder ID from params or null for root
+
+
   const getCurrentFolderId = () => {
-    return params.id === "root" ? currentUser.userId : params.id;
+    const currentFolderId=params.id == "root" ? currentUser.userId : params.id;
+    console.log("currentFolderId",currentFolderId,params.id=="root",currentUser)
+    return currentFolderId;
   };
 
-  // Create folder function
+ 
   const createFolder = async () => {
     if (!newFolderName.trim() || !currentUser.token) return;
 
@@ -194,26 +196,30 @@ export default function HomeScreen({ params }: { params: any }) {
   const getUserDetails = async () => {
     const userDetails = await getUserDetailsFromCookie();
     if (userDetails) {
-      const { id, email, token } = userDetails;
+      const { userId, email, token } = userDetails;
+      console.log(userDetails,"userDetails")
       setCurrentUser({
         email: email as string,
-        userId: id as string,
+        userId: userId as string,
         token: token as string,
       });
 
 
-      await getFolderContents(getCurrentFolderId(), token as string);
-      await buildBreadcrumbs(getCurrentFolderId(), token as string);
+
+      await getFolderContents(params.id=='root'?userId as string :getCurrentFolderId(), token as string);
+      await buildBreadcrumbs(params.id=='root'?userId as string :getCurrentFolderId(), token as string);
     } else {
 
       router.push("/auth/");
     }
   };
 
-  const getFolderContents = async (folderId: string | null, token: string) => {
+  const getFolderContents = async ( folderId:string,token: string) => {
     setLoading(true);
     try {
-      const folderIdParam = folderId || "689c241a9bad5e3b65a72e6a";
+      const folderIdParam = folderId;
+
+      console.log("folderId",folderId)
 
       const foldersResponse = await axios.get(
         `${backendUrl}/folders/${folderIdParam}`,

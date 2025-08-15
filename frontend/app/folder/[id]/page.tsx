@@ -209,7 +209,6 @@ export default function HomeScreen({ params }: { params: any }) {
       await getFolderContents(params.id=='root'?userId as string :getCurrentFolderId(), token as string);
       await buildBreadcrumbs(params.id=='root'?userId as string :getCurrentFolderId(), token as string);
     } else {
-
       router.push("/auth/");
     }
   };

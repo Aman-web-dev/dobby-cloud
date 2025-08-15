@@ -22,7 +22,7 @@ export const uploadImage = async (req, res) => {
     const newImage = await Image.create({
       name,
       user: userId,
-      folder: folderId===userId?null:folderId,
+      folder: folderId==userId?null:folderId,
       imageUrl
     });
 

@@ -106,7 +106,7 @@ export default function HomeScreen({ params }: { params: any }) {
         `${backendUrl}/folders/`,
         {
           name: newFolderName,
-          parentFolder: getCurrentFolderId(),
+          parentFolderId: getCurrentFolderId(),
         },
         {
           headers: {

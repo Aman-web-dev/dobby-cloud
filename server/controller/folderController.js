@@ -36,7 +36,7 @@ export const createFolder = async (req, res) => {
     const newFolder = await Folder.create({
       name,
       user: userId,
-      parentFolder: parentFolderId || null,
+      parentFolder: parentFolderId==userId?null:parentFolderId,
       path
     });
 
